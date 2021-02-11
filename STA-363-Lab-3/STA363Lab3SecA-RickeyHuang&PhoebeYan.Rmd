@@ -160,15 +160,15 @@ The CV test data set has 11 rows with 38 columns.
 ```{r, echo=TRUE}
 #train a LSLR model
 m1_train <- lm(Winner_Pts ~ Winner_FirstDowns, data = CVtraining)
-summary(m1_train)
+#summary(m1_train)
 #train a third order polynomial model
 m2_train <- lm(Winner_Pts ~ Winner_FirstDowns + I(Winner_FirstDowns^2) + I(Winner_FirstDowns^3), data = CVtraining)
-summary(m2_train)
+#summary(m2_train)
 ```
 
-LSLR: $\widehat{Y} = 3.9496 + 1.2280 X$, where $Y$=WiningScore, $X$=number of first downs.
+LSLR: $\widehat{Y} = 7.5716  + 1.0555 X$, where $Y$=WiningScore, $X$=number of first downs.
 
-Third order polynomial: $\widehat{Y} = -105.625476 + 18.94921 X - 0.91915 X^2 + 0.01535 X^3$, where $Y$=WiningScore, $X$=number of first downs.
+Third order polynomial: $\widehat{Y} = -81.57722 + 16.04965 X -0.80112 X^2 + 0.01369 X^3$, where $Y$=WiningScore, $X$=number of first downs.
 
 ## Question 16
 
@@ -182,10 +182,10 @@ The estimates of the parameters are not the same. We do not expect them to be th
 
 ```{r,echo=FALSE}
 X_train1 <- head(CVtest,1)$Winner_FirstDowns
-Y_train1 = 3.9496 + 1.2280*X_train1
+Y_train1 = 7.5716  + 1.0555*X_train1
 ```
 
-$\widehat{Y_{train_{1}}} = 3.9496 + 1.2280 \times X_{train_{1}} = 49.3856$
+$\widehat{Y_{train_{1}}} = 7.5716  + 1.0555 \times X_{train_{1}} = 46.6251$
 
 ## Question 18
 
@@ -271,4 +271,4 @@ After changing the random seed to $497$,
 the test RSS for model 1 is $865.0746$, for model 2 is $935.9522$;
 the test MSE for model 1 is $78.6431$, for model 2 is $85.0866$.
 
-Our answer to the test RSS and test MSE for model 1 and 2 all changed from the question $21$.
+Our answer to the test RSS and test MSE for model 1 and 2 all changed, but still the LSLR model is better at predicting, which is the same as the question $21$.
