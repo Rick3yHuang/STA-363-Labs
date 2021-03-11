@@ -1,6 +1,6 @@
 ---
 title: "STA-363-Lab-5"
-author: "Phoebe Yan & Rickey huang"
+author: "Phoebe Yan, Jean Ji & Rickey huang"
 date: "3/10/2021"
 output: pdf_document
 ---
@@ -23,7 +23,7 @@ cdc$wtdesire <- cdc$weight - cdc$wtdesire
 
 *Based on this, how many models do you think we fit in Stage 1 (Step 1) of BSS? Hint: Think carefully here. Some of the variables are categorical with more than two levels. Each level counts as a possible X.*
 
-We think when we fit the models in the stage 1, step 1 of BSS, we would fit 11 models with 15 possible Xs. Each numeric variables can be served as a possible X to fit a model. There are 3 numeric variables among all variables. For the categorical variables with only 2 levels, we can use one level between the two to represent the variable and set it to 1 when the indivial is in this level and 0 otherwise. There are 4 categorical variables in this dataset. In addition, the variable *genhlth* is a categorical variable with 5 levels, which are *poor*, *fair*, *excellent*, *good*, and *very good*, and 4 of them can be served as separate variable choices with two levels for the model. Hence, we have $3 + 4 + 4 = 11$ models in total we can fit during the first step of the stage 1 of BSS.
+We think when we fit the models in the stage 1, step 1 of BSS, we would fit 11 models with 15 possible X's. Each numeric variables can be served as a possible X to fit a model. There are 3 numeric variables among all variables. For the categorical variables with only 2 levels, we can use one level between the two to represent the variable and set it to 1 when the individual is in this level and 0 otherwise. There are 4 categorical variables in this data set. In addition, the variable *genhlth* is a categorical variable with 5 levels, which are *poor*, *fair*, *excellent*, *good*, and *very good*, and 4 of them can be served as separate variable choices with two levels for the model. Hence, we have $3 + 4 + 4 = 11$ models in total we can fit during the first step of the stage 1 of BSS.
 
 ## Question 2
 
@@ -55,7 +55,7 @@ BSScat <- regsubsets(weight ~ genhlth + exerany + hlthplan + smoke100 + gender, 
 summary(BSScat)$adjr2
 ```
 
-See from the somputation result for ajusted $R^2$ s above, the $R_{adj}^{2}$ of the model fitted with one X is $0.2202324$. The $R_{adj}$ for the model with two Xs is 0.2246977.
+See from the computation result for adjusted $R^2$ s above, the $R_{adj}^{2}$ of the model fitted with one X is $0.2202324$. The $R_{adj}$ for the model with two Xs is 0.2246977.
 
 ## Question 5
 
@@ -69,7 +69,7 @@ plot(BSScat, scale = "adjr2")
 
 *What is the R2adj of the model with health Good, health Fair, gender female and the intercept?*
 
-From the plote made from the previous question, we can see that the model with health Good, health Fair, gender female and the intercept has an $R_{adj}^{2}$ of 0.23
+From the plot made from the previous question, we can see that the model with health Good, health Fair, gender female and the intercept has an $R_{adj}^{2}$ of 0.23
 
 ## Question 7
 
@@ -84,17 +84,20 @@ plot(BSSall, scale = "adjr2")
 
 *Which features are used in the model with the lowest value of R2adj, and what is the value of R2adj for that model?*
 
-In the lowest $R_{adj}^{2}$ ($0.64$) model, the feature used are the desired weight in pounds and the intercept. The model with the highest $R_{adj}^{2}$ ($0.67$) uses features of health Very Good, health Good, health Fair, exerany, health plan, height, desired weight in pounds, age, gender female and the intercept.
+In the lowest $R_{adj}^{2}$ ($0.36$) model, the feature used are the desired weight in pounds and the intercept. The model with the highest $R_{adj}^{2}$ ($0.77$) uses features of health Very Good, health Good, health Fair, exerany, health plan, height, desired weight in pounds, age, gender female and the intercept.
 
 ## Question 9
 
 *Which features are used in the model with a R2adj of .73?*
 
-```{r}
-summary(BSSall)$adjr2
-```
+Based on the plot we made above, in the model with a $R_{adj}^{2}$ of $0.73$, the features used are the height, the desired weight in pounds and the intercept.
 
 ## Question 10
 
 *Based on the results, which features would you choose to use? Explain. There is more than one correct answer here, so make sure you justify your reasoning.*
 
+```{r}
+summary(BSSall)$adjr2
+```
+
+Based on the results, we would like to choose the model with features health Good, Health Fair, smoke100, height, weight desired, age, gender female, and the intercept. because compare with others, this model has a adjusted $R^{2}$ of $0.7730423$. The models with less features have $R_{adj}^{2}$ much smaller than the model we choose, while the $R_{adj}^{2}$ for the models with more feature than our model only increase at $0.0001$ level. Thus, since we don't want to pursue a small increase in the $R_{adj}^{2}$ which would trade off with the manipuility since we would have more variables in our model instead.
