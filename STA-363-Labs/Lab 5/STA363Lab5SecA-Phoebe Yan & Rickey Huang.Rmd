@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
 ```{r}
@@ -16,11 +16,85 @@ source("http://www.openintro.org/stat/data/cdc.R")
 
 ```{r}
 #change the variable
-cdc$wtdesire<- cdc$weight -cdc$wtdesire
+cdc$wtdesire <- cdc$weight - cdc$wtdesire
 ```
 
 ## Question 1
 
 *Based on this, how many models do you think we fit in Stage 1 (Step 1) of BSS? Hint: Think carefully here. Some of the variables are categorical with more than two levels. Each level counts as a possible X.*
 
-We think when we fit the models in the Stage 1 of BSS, we would fit 11 models with 15 possible Xs. Each numeric variables can be served as a possible X to fit a model. There are 3 numeric variables among all variables. For the categorical variables with only 2 levels, we can use one level between the two to represent the variable and set it to 1 when the indivial is in this level and 0 otherwise. There are 4 categorical variables in this dataset. In addition, the variable *genhlth* is a categorical variable with 5 levels, which are *poor*, *fair*, *excellent*, *good*, and *very good*, and each of them can served as a separate variable choice for the model. Hence, we have $3 + 4 + 5 = 11$ models in total we can fit during the first step of BSS.
+We think when we fit the models in the stage 1, step 1 of BSS, we would fit 11 models with 15 possible Xs. Each numeric variables can be served as a possible X to fit a model. There are 3 numeric variables among all variables. For the categorical variables with only 2 levels, we can use one level between the two to represent the variable and set it to 1 when the indivial is in this level and 0 otherwise. There are 4 categorical variables in this dataset. In addition, the variable *genhlth* is a categorical variable with 5 levels, which are *poor*, *fair*, *excellent*, *good*, and *very good*, and 4 of them can be served as separate variable choices with two levels for the model. Hence, we have $3 + 4 + 4 = 11$ models in total we can fit during the first step of the stage 1 of BSS.
+
+## Question 2
+
+*Once we have fit all these models in Stage 1 (Step 2) of BSS, what do you think we do? Hint: Same as Stage 1 (Step 1).*
+
+After fitting all these models in the stage 1, step 2, we would compute and compare the $R^{2}$ of these models we get during the step 2, and the LSLR model with the highest $R^{2}$ will be stored.
+
+## Question 3
+
+*How many $\beta$ terms are in this full model? In other words, we end with Stage 1 ( Step what) ? Hint: If you are stuck, just fit the model in R and look. You can do this by putting in all the predictors manually, or using ModelFull <- lm( weight ~ . , data = cdc).*
+
+```{r}
+ModelFull <- lm(weight ~ ., data = cdc)
+ModelFull
+```
+
+From the result above, in the full model, including the intercept term, we would have 12 $\beta$ terms.
+
+## Question 4
+
+*Look at only the categorical features in the data. Using these categorical features only, run the first stage of BSS and call the output BSScat. Remember to change the nvmax part of the code!!! You will notice that nothing seems to happen, as the output has been stored. Let's look at the R2adj value of each of these models by using the code summary(BSScat)$adjr2. What is the R2adj of the model fit with one X? (This is the first value). With two Xs? (This is the second value).*
+
+```{r}
+library(leaps)
+```
+
+```{r}
+BSScat <- regsubsets(weight ~ genhlth + exerany + hlthplan + smoke100 + gender, data = cdc, nvmax = 8)
+summary(BSScat)$adjr2
+```
+
+See from the somputation result for ajusted $R^2$ s above, the $R_{adj}^{2}$ of the model fitted with one X is $0.2202324$. The $R_{adj}$ for the model with two Xs is 0.2246977.
+
+## Question 5
+
+*Create a plot to help us see the values of the R2adj for all our models from Stage 1. To do this, you can use code plot(BSScat, scale = "adjr2"). Note: You can also use plot(BSScat, scale = "Cp") (which does AIC) or plot(BSScat, scale = "bic"), if you are wanting to use other metrics in the future.*
+
+```{r}
+plot(BSScat, scale = "adjr2")
+```
+
+## Question 6
+
+*What is the R2adj of the model with health Good, health Fair, gender female and the intercept?*
+
+From the plote made from the previous question, we can see that the model with health Good, health Fair, gender female and the intercept has an $R_{adj}^{2}$ of 0.23
+
+## Question 7
+
+*Use all the possible feature variables (categorical and numeric) and run the first stage of BSS and call the output BSSall. Then, use the code plot(BSSall, scale = "adjr2") to plot the results.*
+
+```{r}
+BSSall <- regsubsets(weight ~ genhlth + exerany + hlthplan + smoke100 + height + wtdesire + age + gender, data = cdc, nvmax = 11)
+plot(BSSall, scale = "adjr2")
+```
+
+## Question 8
+
+*Which features are used in the model with the lowest value of R2adj, and what is the value of R2adj for that model?*
+
+In the lowest $R_{adj}^{2}$ ($0.64$) model, the feature used are the desired weight in pounds and the intercept. The model with the highest $R_{adj}^{2}$ ($0.67$) uses features of health Very Good, health Good, health Fair, exerany, health plan, height, desired weight in pounds, age, gender female and the intercept.
+
+## Question 9
+
+*Which features are used in the model with a R2adj of .73?*
+
+```{r}
+summary(BSSall)$adjr2
+```
+
+## Question 10
+
+*Based on the results, which features would you choose to use? Explain. There is more than one correct answer here, so make sure you justify your reasoning.*
+
