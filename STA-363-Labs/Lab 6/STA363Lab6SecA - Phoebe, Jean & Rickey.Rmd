@@ -1,0 +1,11 @@
+---
+title: "STA363Lab6SecA"
+author: "Jean Ji, Phoebe Yan & Rickey huang"
+date: "4/6/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
