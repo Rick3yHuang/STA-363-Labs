@@ -135,3 +135,38 @@ Only using the *"S.F.Ratio"*, the LSLR model fitted has the regression line of $
 ## Question 11
 
 *Based on your LSLR model, what graduation rate would you predict for a school with a student faculty ratio of 10 (1 student to 10 faculty)? How does this compare to what you get from a tree?*
+
+```{r, echo = FALSE}
+#84.2168 - 1.3310*10
+```
+
+Based on the LSLR model we just built, the graduation rate we would predict for a school with a student faculty ratio of $10$ is $70.9068$. This result is different from the prediction we get from the tree model which is $69$.
+
+## Question 12
+
+*Find the test MSE for your tree and for your LSLR model with student faculty ratio as a feature. Based on test metrics, which model would you choose and why?*
+
+```{r}
+# Use LOOCV technique to do the cross validation
+# Store the number of rows into n
+n <- nrow(college)
+# Create space to store the residual sum of squares for both models
+rss_Tree2 <- rep(0,n)
+rss_LSLR2 <- rep(0,n)
+# For loop to perform the LOOCV technique
+for (i in 1:n) {
+  # Train the models with each i
+  Tree2CV <- rpart(Grad.Rate ~ S.F.Ratio, method = "anova", data = college[-i,], cp = 0.02, maxdepth = 1)
+  LSLR2CV <- lm(Grad.Rate ~ S.F.Ratio, data = college[-i,])
+  # Make prediction with both models for each i
+  yhat_Tree2 <- predict(Tree2CV, newdata = college[i,])
+  yhat_LSLR2 <- predict(LSLR2CV, newdata = college[i,])
+  # Calculate the residual sum of squares for each model
+  rss_Tree2[i] <- (college$Grad.Rate - yhat_Tree2)^2
+  rss_LSLR2[i] <- (college$Grad.Rate - yhat_LSLR2)^2
+}
+# Compute the test MSE for both the models
+MSE_Tree2 <- mean(rss_Tree2)
+MSE_LSLR2 <- mean(rss_LSLR2)
+```
+
