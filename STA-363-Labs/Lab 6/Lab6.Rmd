@@ -1,0 +1,247 @@
+---
+title: "Lab6"
+author: "Phoebe Yan"
+date: "4/11/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#load in the data
+college <- read.csv("~/Downloads/collegedata.csv")
+#load package
+#install.packages("rattle")
+#install.packages("rpart.plot")
+suppressMessages(library(rpart))
+suppressMessages(library(rattle))
+suppressMessages(library(rpart.plot))
+```
+
+# Question 1
+
+Trees begin with a split on a single feature. Suppose we decided to consider splitting on whether or not the school is a private school. Explain in 1-2 sentences how you would use this feature to create one split, and how you would use the splitting rule to move rows into leaves.
+
+# Question 2
+
+Without using rpart to build the tree, find the training RSS we would get if we split on whether or not a school is a private school. Show your code.
+
+```{r}
+#separate the dataset
+collegeP <- subset(college, Private=="Yes")
+collegeNP <- subset(college, Private=="No")
+#train two model
+modelP <- lm(Grad.Rate~S.F.Ratio+Expend, collegeP)
+modelNP <- lm(Grad.Rate~S.F.Ratio+Expend, collegeNP)
+#compute the training RSS for each
+RSSP <- sum((modelP$residuals)^2)
+RSSNP <- sum((modelNP$residuals)^2)
+```
+
+# Question 3
+
+Now, using the rpart code, create a tree using only Private as a feature. Call tree Tree1. Show a visualization of your tree as your answer.
+
+```{r}
+#train the tree with a split on Private
+Tree1 <- rpart(Grad.Rate~Private,
+               method = 'anova',
+               data = college)
+#visualize the tree
+fancyRpartPlot(Tree1, sub="Tree1: Regression Tree using Private")
+```
+
+# Question 4
+
+Based on your tree, what percent of your training data comes from public schools?
+
+27% of the training data comes from public schools
+
+# Question 5
+
+Based on your tree, what graduation rate would you predict for a public school?
+
+we are expected to have a graduation rate of 56% for a public school
+
+# Question 6
+
+Fit a least squares linear regression model for graduation rate, using whether or not a school is a private school as a feature. Call this model LSLR1. Write out the fitted regression line.
+
+```{r}
+LSLR1 <- lm(Grad.Rate~Private, college)
+coef(LSLR1)
+```
+
+The fitted regression line is:
+$\widehat{Grad.Rate}$ = 56.04245 + 12.95578 $\times$ PrivateYes
+
+# Question 7
+
+Based on the LSLR model, what graduation rate would you predict for a public school? Keeping in mind that in the visualization our trees round to the nearest whole number, how do these predictions compare to those you made from the tree?
+
+We are expected to have a graduation rate of 56.04245 for a public school.
+The prediction is roughly the same as the prediction we got from the tree.
+
+# Question 8
+
+Create a tree using only student faculty ratio as a feature. Use the maxdepth = 1 stopping criterion to make sure that for the moment, the tree only has one split. If you don't do this, the tree will keep growing, and for now, we only want one split. Call tree Tree2, and show a visualization of your tree as your answer.
+
+```{r}
+#train the tree with a split on student faculty ratio
+Tree2 <- rpart(Grad.Rate~S.F.Ratio,
+               method = 'anova',
+               maxdepth = 1,
+               data = college)
+#visualize the tree
+fancyRpartPlot(Tree2, sub="Tree2: Regression Tree using S.F.Ratio")
+```
+
+# Question 9
+
+Based on your tree, what graduation rate would you predict for a school with a student faculty ratio of 10 (1 student to 10 faculty)?
+
+We are expected to have a graduation rate of 69 for a school with a student faculty ratio of 10.
+
+# Question 10
+
+Fit a least squares linear regression model for graduation rate, using student faculty ratio as the only feature. Call this model LSLR2. Write out the fitted regression line.
+
+```{r}
+LSLR2 <- lm(Grad.Rate~S.F.Ratio, college)
+coef(LSLR2)
+```
+
+# Question 11
+
+Based on your LSLR model, what graduation rate would you predict for a school with a student faculty ratio of 10 (1 student to 10 faculty)? How does this compare to what you get from a tree?
+
+```{r}
+84.216786-1.331005*10
+```
+
+We are expected to have a graduation rate of 70.90674 for a school with a student faculty ratio of 10.
+This prediction is not the same as we got from the tree model/
+
+# Question 12
+
+Find the test MSE for your tree and for your LSLR model with student faculty ratio as a feature. Based on test metrics, which model would you choose and why?
+
+```{r,echo=FALSE}
+n <- nrow(college)
+#set sample seed
+set.seed(2021)
+#create vector to store RMSE for each test
+residuals1 <- matrix(NA, nrow = n, ncol = 1)
+#set up k
+k <- 10
+#create folds
+folds <- sample(rep(1:k,78), n, replace = FALSE)
+#For loop to compute the residual
+for(i in 1:k){
+  #find the rows in fold i
+  infold <- which(folds==i)
+  #create CVtraining data
+  CVtrain1 <- college[-infold,]
+  #create CVtest data
+  CVtest1 <- college[infold,]
+  #train the model
+  m1 <- lm(Grad.Rate~S.F.Ratio, data = CVtrain1)
+  #predict with the test data
+  pred1 <- predict(m1, newdata = CVtest1)
+  #compute the RMSE
+  residuals1[infold] <- CVtest1$Grad.Rate-pred1
+}
+#compute the MSE
+mse1 <- (t(residuals1)%*%(residuals1))/n
+mse1
+```
+
+The test MSE for our LSLR model is 
+
+```{r}
+printcp(Tree2)
+```
+
+```{r}
+294.69*0.9632
+```
+
+The 10-fold CV test MSE is 283.8454 for our tree model.
+
+# Question 13
+
+Create a tree using student faculty ratio, whether or the not the school is a private school, and expenses on each student as features. Call the tree Tree3, and show a visualization of your tree as your answer.
+
+```{r}
+#train the tree with three variables
+Tree3 <- rpart(Grad.Rate~S.F.Ratio+Private+Expend,
+               method = 'anova',
+               data = college)
+#visualize the tree
+fancyRpartPlot(Tree3, sub="Tree3: Regression Tree using three variables")
+```
+
+# Question 14
+
+Type the code ?rpart.control into a chunk, and hit play, and then put a # in front of the code. What will pop up is the R help page. This page shows all of the stopping criteria you can choose to use when growing a tree. It also shows (in the code at the top) the default stopping criteria that R uses if we don't specify our own. What is the default number of rows that have to be in a leaf in order for it to split?
+
+```{r}
+#?rpart.control
+```
+
+The default number of rows that have to be in a leaf in order for it to split is 20.
+
+# Question 15
+
+Which feature was able to give us the largest reduction in training RSS in one split?
+
+Based on Tree3, we know that Expend was able to give the largest reduction in training RSS in one split.
+
+# Question 16
+
+Based on our tree, what is the predicted graduation of a public school that spends about 12,000 US dollars on each student in terms of school expenses, with a student faculty ratio of 20 (meaning 1:20)?
+
+The predicted graduation rate would be 61%.
+
+# Question 17
+
+Create a tree using all of the features (except university name). Call the tree TreeAll, and show a visualization of your tree as your answer.
+
+```{r}
+#train the tree with three variables
+TreeAll <- rpart(Grad.Rate~Private+Apps+Accept+Enroll+Top10perc+Top25perc+F.Undergrad+P.Undergrad+Outstate+Room.Board+Books+Personal+PhD+Terminal+S.F.Ratio+perc.alumni+Expend,
+               method = 'anova',
+               data = college)
+#visualize the tree
+fancyRpartPlot(TreeAll, sub="Tree4: Regression Tree using all variables")
+```
+
+# Question 18
+
+Prune your tree. Call the final tree TreeFinal, and show a visualization of your tree as your answer.
+
+```{r}
+#TreeAll$cptable
+TreeFinal <- prune(TreeAll, cp=TreeAll$cptable[7, "CP"])
+#visualize the tree
+fancyRpartPlot(TreeFinal, sub="Tree5: Pruned Regression Tree using all variables")
+```
+
+# Question 19
+
+With your pruned tree, how many leaves did you remove from the original tree? Hint: It is okay in practice if the answer is 0, it just means that the stopping rules already gave us a tree that predicted (relatively!) well.
+
+We removed 5 leaves from the original tree.
+
+# Question 20
+
+What is the predicted test RMSE of your final pruned tree?
+
+```{r}
+#printcp(TreeFinal)
+sqrt((TreeFinal$cptable[7,"xerror"])*294.69)
+```
+
+The predicted test RMSE of the final pruned tree is 14.16337.
