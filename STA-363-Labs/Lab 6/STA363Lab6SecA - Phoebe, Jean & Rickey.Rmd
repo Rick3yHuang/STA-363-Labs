@@ -146,27 +146,123 @@ Based on the LSLR model we just built, the graduation rate we would predict for 
 
 *Find the test MSE for your tree and for your LSLR model with student faculty ratio as a feature. Based on test metrics, which model would you choose and why?*
 
-```{r}
-# Use LOOCV technique to do the cross validation
-# Store the number of rows into n
+```{r,echo=FALSE}
+# Store the number of rows in the data set into the variables n
 n <- nrow(college)
-# Create space to store the residual sum of squares for both models
-rss_Tree2 <- rep(0,n)
-rss_LSLR2 <- rep(0,n)
-# For loop to perform the LOOCV technique
-for (i in 1:n) {
-  # Train the models with each i
-  Tree2CV <- rpart(Grad.Rate ~ S.F.Ratio, method = "anova", data = college[-i,], cp = 0.02, maxdepth = 1)
-  LSLR2CV <- lm(Grad.Rate ~ S.F.Ratio, data = college[-i,])
-  # Make prediction with both models for each i
-  yhat_Tree2 <- predict(Tree2CV, newdata = college[i,])
-  yhat_LSLR2 <- predict(LSLR2CV, newdata = college[i,])
-  # Calculate the residual sum of squares for each model
-  rss_Tree2[i] <- (college$Grad.Rate - yhat_Tree2)^2
-  rss_LSLR2[i] <- (college$Grad.Rate - yhat_LSLR2)^2
+# Set sample seed
+set.seed(2021)
+# Create vector to store the residuals for each test
+residuals1 <- matrix(NA, nrow = n, ncol = 1)
+# Set up k (the number of the folds)
+k <- 10
+# Create folds
+folds <- sample(rep(1:k,78), n, replace = FALSE)
+# For loop to compute the residual
+for(i in 1:k){
+  # Find the rows in fold i
+  infold <- which(folds==i)
+  # Create CVtraining data
+  CVtrain1 <- college[-infold,]
+  # Create CVtest data
+  CVtest1 <- college[infold,]
+  # Train the model
+  m1 <- lm(Grad.Rate~S.F.Ratio, data = CVtrain1)
+  # Predict with the test data
+  pred1 <- predict(m1, newdata = CVtest1)
+  # Compute the RMSE
+  residuals1[infold] <- CVtest1$Grad.Rate-pred1
 }
-# Compute the test MSE for both the models
-MSE_Tree2 <- mean(rss_Tree2)
-MSE_LSLR2 <- mean(rss_LSLR2)
+# Compute the MSE
+mse1 <- (t(residuals1)%*%(residuals1))/n
+#mse1
 ```
 
+Using the 10-fold cross validation technique, we compute the test MSE for our LSLR model which is 268.1957.
+
+```{r, echo=FALSE}
+#printcp(Tree2)
+```
+
+```{r, echo=FALSE}
+#294.69*0.9632
+```
+
+Since the test MSE for the tree model can be computed by using $Xerror \times RNE$, test MSE for our tree model is $294.69 \times 0.9632 = 283.8454$.
+
+Comparing the test MSE of two models, we would choose the LSLR model, since it has a lower test MSE, which means the prediction for the test data are closer to the real data for the LSLR model than the tree model.
+
+## Question 13
+
+*Create a tree using student faculty ratio, whether or the not the school is a private school, and expenses on each student as features. Call the tree Tree3, and show a visualization of your tree as your answer.*
+
+```{r, echo = FALSE}
+#train the tree with three variables
+Tree3 <- rpart(Grad.Rate~S.F.Ratio+Private+Expend,
+               method = 'anova',
+               data = college)
+#visualize the tree
+fancyRpartPlot(Tree3, sub="Tree3: Regression Tree using three variables")
+```
+
+## Question 14
+
+*Type the code ?rpart.control into a chunk, and hit play, and then put a # in front of the code. What will pop up is the R help page. This page shows all of the stopping criteria you can choose to use when growing a tree. It also shows (in the code at the top) the default stopping criteria that R uses if we don't specify our own. What is the default number of rows that have to be in a leaf in order for it to split?*
+
+```{r, echo = FALSE}
+#?rpart.control
+```
+
+The default number of rows that have to be in a leaf in order for it to split is 20.
+
+## Question 15
+
+*Which feature was able to give us the largest reduction in training RSS in one split?*
+
+Based on Tree3, we know that Expend was able to give the largest reduction in training RSS in one split.
+
+## Question 16
+
+*Based on our tree, what is the predicted graduation of a public school that spends about 12,000 US dollars on each student in terms of school expenses, with a student faculty ratio of 20 (meaning 1:20)?*
+
+The predicted graduation rate would be 61%.
+
+## Question 17
+
+*Create a tree using all of the features (except university name). Call the tree TreeAll, and show a visualization of your tree as your answer.*
+
+```{r, echo = FALSE}
+#train the tree with three variables
+TreeAll <- rpart(Grad.Rate~Private+Apps+Accept+Enroll+Top10perc+Top25perc+F.Undergrad+P.Undergrad+Outstate+Room.Board+Books+Personal+PhD+Terminal+S.F.Ratio+perc.alumni+Expend,
+               method = 'anova',
+               data = college)
+#visualize the tree
+fancyRpartPlot(TreeAll, sub="Tree4: Regression Tree using all variables")
+```
+
+## Question 18
+
+*Prune your tree. Call the final tree TreeFinal, and show a visualization of your tree as your answer.*
+
+```{r, echo = FALSE, fig.asp=0.6}
+#TreeAll$cptable
+TreeFinal <- prune(TreeAll, cp=TreeAll$cptable[7, "CP"])
+#visualize the tree
+fancyRpartPlot(TreeFinal, sub="Tree5: Pruned Regression Tree using all variables")
+```
+
+## Question 19
+
+*With your pruned tree, how many leaves did you remove from the original tree? Hint: It is okay in practice if the answer is 0, it just means that the stopping rules already gave us a tree that predicted (relatively!) well.*
+
+We removed 5 leaves from the original tree.
+
+## Question 20
+
+*What is the predicted test RMSE of your final pruned tree?*
+
+```{r, echo = FALSE}
+#printcp(TreeFinal)
+#sqrt((TreeFinal$cptable[7,"xerror"])*294.69)
+```
+
+The predicted test RMSE of the final pruned tree is 14.16337.
