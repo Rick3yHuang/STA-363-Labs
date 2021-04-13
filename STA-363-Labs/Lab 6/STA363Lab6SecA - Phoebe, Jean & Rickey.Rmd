@@ -81,7 +81,7 @@ Based on Tree$1$, $27\%$ of the training data comes from public schools.
 
 *Based on your tree, what graduation rate would you predict for a public school?*
 
-The predicting graduation rate for a public school is $56$. 
+The predicting graduation rate for a public school is $56\%$.
 
 ## Question 6
 
@@ -100,7 +100,7 @@ Only using the feature *"Private"*, the fitted LSLR model has the regression lin
 
 *Based on the LSLR model, what graduation rate would you predict for a public school? Keeping in mind that in the visualization our trees round to the nearest whole number, how do these predictions compare to those you made from the tree?*
 
-Based on the regression line of the LSLR model, the predicting graduation rate for a public school would be $56.042$. The predictions from both the tree model and the LSLR model is almost the same, since the prediction from the tree model is also $56.042$.
+Based on the regression line of the LSLR model, the predicting graduation rate for a public school would be $56.042$. The predictions from both the tree model and the LSLR model is almost the same, since the prediction from the tree model is also $56$.
 
 ## Question 8
 
@@ -117,7 +117,7 @@ fancyRpartPlot(Tree2, sub = "Tree2: Regression tree using only the S.F.Ratio fea
 
 *Based on your tree, what graduation rate would you predict for a school with a student faculty ratio of 10 (1 student to 10 faculty)?*
 
-Based on Tree2, the predicting graduation rate for a school with a student faculty ratio of $10$ would be $69$.
+Based on Tree2, the predicting graduation rate for a school with a student faculty ratio of $10$ would be $69\%$.
 
 ## Question 10
 
@@ -212,11 +212,15 @@ fancyRpartPlot(Tree3, sub="Tree3: Regression Tree using three variables")
 #?rpart.control
 ```
 
-The default number of rows that have to be in a leaf in order for it to split is 20.
+The default number of rows that have to be in a leaf in order for it to split is $20$.
 
 ## Question 15
 
 *Which feature was able to give us the largest reduction in training RSS in one split?*
+
+```{r, echo = FALSE}
+#plotcp(Tree3)
+```
 
 Based on Tree3, we know that Expend was able to give the largest reduction in training RSS in one split.
 
@@ -224,18 +228,18 @@ Based on Tree3, we know that Expend was able to give the largest reduction in tr
 
 *Based on our tree, what is the predicted graduation of a public school that spends about 12,000 US dollars on each student in terms of school expenses, with a student faculty ratio of 20 (meaning 1:20)?*
 
-The predicted graduation rate would be 61%.
+The predicted graduation rate would be $61\%$.
 
 ## Question 17
 
 *Create a tree using all of the features (except university name). Call the tree TreeAll, and show a visualization of your tree as your answer.*
 
 ```{r, echo = FALSE}
-#train the tree with three variables
+# Train the tree with three variables
 TreeAll <- rpart(Grad.Rate~Private+Apps+Accept+Enroll+Top10perc+Top25perc+F.Undergrad+P.Undergrad+Outstate+Room.Board+Books+Personal+PhD+Terminal+S.F.Ratio+perc.alumni+Expend,
                method = 'anova',
                data = college)
-#visualize the tree
+# Visualize the tree
 fancyRpartPlot(TreeAll, sub="Tree4: Regression Tree using all variables")
 ```
 
@@ -244,9 +248,11 @@ fancyRpartPlot(TreeAll, sub="Tree4: Regression Tree using all variables")
 *Prune your tree. Call the final tree TreeFinal, and show a visualization of your tree as your answer.*
 
 ```{r, echo = FALSE, fig.asp=0.6}
-#TreeAll$cptable
+# Compute the cp table in order to determine the alpha minimizing the Xerror
+#printcp(TreeAll)
+# Pruning the final tree model
 TreeFinal <- prune(TreeAll, cp=TreeAll$cptable[7, "CP"])
-#visualize the tree
+# Visualize the tree
 fancyRpartPlot(TreeFinal, sub="Tree5: Pruned Regression Tree using all variables")
 ```
 
@@ -254,7 +260,7 @@ fancyRpartPlot(TreeFinal, sub="Tree5: Pruned Regression Tree using all variables
 
 *With your pruned tree, how many leaves did you remove from the original tree? Hint: It is okay in practice if the answer is 0, it just means that the stopping rules already gave us a tree that predicted (relatively!) well.*
 
-We removed 5 leaves from the original tree.
+Comparing the pruned tree with the original tree with all feature, we removed $5$ leaves from the original tree.
 
 ## Question 20
 
@@ -265,4 +271,4 @@ We removed 5 leaves from the original tree.
 #sqrt((TreeFinal$cptable[7,"xerror"])*294.69)
 ```
 
-The predicted test RMSE of the final pruned tree is 14.16337.
+The predicted test RMSE of the final pruned tree is $14.11611$.
